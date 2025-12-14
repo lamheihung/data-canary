@@ -12,10 +12,10 @@ authors = [
 dependencies = [
     "streamlit>=1.38",        
     "pandas",                 
-    "polars",                 
-    "openai>=1.30",           
+    "polars",          
     "python-dotenv>=1.0",     
-    "pydantic>=2.7"           
+    "pydantic>=2.7",
+    "google-genai"        
 ]
 
 [project.optional-dependencies]
