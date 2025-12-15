@@ -28,7 +28,7 @@ jobs:
       run: pip install uv
 
     - name: Install dependencies
-      run: uv sync --dev
+      run: uv sync --extra dev
 
     - name: Run Ruff Linter and Formatter
       run: |
