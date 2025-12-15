@@ -21,9 +21,9 @@ class NamingCheckReport(BaseModel):
 class TypeSuggestion(BaseModel):
     """Details for a single column's type suggestion.""" 
     column_name: str = Field(description="The name of the column being analyzed.")
-    current_dtype: str = Field(description="The current data type as inferred by Pandas (e.g., 'object', 'int64').")
+    current_dtype: str = Field(description="The current data type as inferred by Polars (e.g., 'Int8', 'Float64').")
     suggested_logical_type: str = Field(description="The suggested, precise logical data type (e.g., 'UUID', 'ISO_DATE', 'CURRENCY_USD', 'CATEGORY').")
-    suggested_pandas_type: str = Field(description="The suggested Python/Pandas dtype for coersion (e.g., 'datetime64', 'string[pyarrow]', 'Int64').")
+    suggested_polars_type: str = Field(description="The suggested Python/Polars dtype for coersion (e.g., 'UInt64', 'Date').")
     reasoning: str = Field(description="The reasoning behind the type suggestion, based on column name or sample data.")
 
 

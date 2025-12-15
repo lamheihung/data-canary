@@ -94,7 +94,7 @@ def display_type_check_report(report: Optional[TypeCheckReport]):
         suggestion_data = [s.model_dump() for s in report.suggestions]
         suggestion_df = pd.DataFrame(suggestion_data)
         
-        display_cols = ["column_name", "current_dtype", "suggested_logical_type", "suggested_pandas_type", "reasoning"]
+        display_cols = ["column_name", "current_dtype", "suggested_logical_type", "suggested_polars_type", "reasoning"]
         st.dataframe(
             suggestion_df[display_cols].set_index("column_name"), 
             use_container_width=True
