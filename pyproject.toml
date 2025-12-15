@@ -23,7 +23,8 @@ dev = [
     "ruff",      
     "black",     
     "mypy",     
-    "pytest"    
+    "pytest",
+    "bandit"
 ]
 
 [build-system]
