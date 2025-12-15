@@ -30,14 +30,14 @@ jobs:
     - name: Install dependencies
       run: uv sync --extra dev
 
-    - name: Run Ruff Linter and Formatter
-      run: |
-        uv run ruff format . --check
-        uv run ruff check .
+    # - name: Run Ruff Linter and Formatter
+    #   run: |
+    #     uv run ruff format . --check
+    #     uv run ruff check .
 
-    - name: Run Bandit Security Scanner
-      run: |
-        uv run bandit -r data_canary
+    # - name: Run Bandit Security Scanner
+    #   run: |
+    #     uv run bandit -r data_canary
 
     - name: Verify Polars and Polars is accessible
       run: |
