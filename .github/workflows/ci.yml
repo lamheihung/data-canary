@@ -32,16 +32,16 @@ jobs:
 
     - name: Run Ruff Linter and Formatter
       run: |
-        python -m ruff format . --check
-        python -m ruff check .
+        uv run ruff format . --check
+        uv run ruff check .
 
     - name: Run Bandit Security Scanner
       run: |
-        python -m bandit -r data_canary
+        uv run bandit -r data_canary
 
     - name: Verify Polars and Polars is accessible
       run: |
-        python -c "import polars as pl; print(f'Polars Version: {pl.__version__}')"
+        uv run python -c "import polars as pl; print(f'Polars Version: {pl.__version__}')"
 
     - name: Build Succeeded
       run: echo "Code quality checks passed!"
