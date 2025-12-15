@@ -3,6 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python: 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue)](https://www.python.org/)
 [![Framework: Polars](https://img.shields.io/badge/Polars-v0.20%2B-purple)](https://www.pola.rs/)
+[![CI Status](https://github.com/lamheihung/data-canary/actions/workflows/ci.yml/badge.svg)](https://github.com/lamheihung/data-canary/actions/workflows/ci.yml)
 
 **Data Canary** is a high-performance data quality tool that utilizes the Gemini API for advanced, contextual data governance checks. It bridges the gap between basic statistical profiling and human-in-the-loop data architecture review by leveraging Large Language Models (LLMs) to automatically assess naming conventions, recommend schema optimizations, and provide clear, actionable reasoning.
 
