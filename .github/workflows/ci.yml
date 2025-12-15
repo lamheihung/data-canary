@@ -3,12 +3,10 @@
 name: CI/CD Data Canary Quality Checks
 
 on:
-  # Run on pushes to the main branch
   push:
     branches:
       - main
-      - feat/** # Run on feature branches (like feat/centralize-persona)
-  # Also run on Pull Requests targeting the main branch
+      - feat/** 
   pull_request:
     branches:
       - main
@@ -26,35 +24,24 @@ jobs:
       with:
         python-version: '3.11'
 
-    # 1. Install dependencies using uv (high-speed)
     - name: Install uv
       run: pip install uv
 
     - name: Install dependencies
       run: uv sync --dev
 
-    # 2. Run Linting and Code Formatting Check (using ruff)
     - name: Run Ruff Linter and Formatter
       run: |
-        # Check for formatting errors (only checks, doesn't fix)
-        ruff format . --check
-        # Run linter
-        ruff check .
+        python -m ruff format . --check
+        python -m ruff check .
 
-    # 3. Security Check (Basic check for now)
-    - name: Run Bandit Security Scanner (optional, but good practice)
+    - name: Run Bandit Security Scanner
       run: |
-        uv pip install bandit
-        # Bandit checks for common security issues
-        bandit -r data_canary
+        python -m bandit -r data_canary
 
-    # 4. Basic Application Check (Smoke Test)
-    # Note: We CANNOT run the full application as it requires the GEMINI_API_KEY
-    # The API key must be secured and should NOT be exposed in the GitHub repository secrets for this basic check.
     - name: Verify Polars and Polars is accessible
       run: |
         python -c "import polars as pl; print(f'Polars Version: {pl.__version__}')"
 
-    # 5. Final message indicating a successful build
     - name: Build Succeeded
       run: echo "Code quality checks passed!"
