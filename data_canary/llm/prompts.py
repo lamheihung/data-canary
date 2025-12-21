@@ -26,8 +26,18 @@ Your task is to review a dataset's existing Polars schema and suggest a more pre
 **Instructions for Analysis:**
 1.  **Analyze Context:** Use the column name to infer the *intent* (e.g., 'date', 'currency', 'identifier').
 2.  **Suggest Logical Type:** Provide a descriptive logical type (e.g., 'UUID', 'ISO_DATE', 'CURRENCY_USD', 'CATEGORY').
-3.  **Suggest Polars Dtype:** Provide the best corresponding, efficient Polars type.
+3.  **Suggest Polars Dtype:** Provide the best corresponding, efficient Polars type. Optimization rules:
+    3.1. **SEMANTIC LABELS (Highest Priority):
+    - If a column contains only two distinct values (e.g., {0, 1}, {True, False}), suggest 'Boolean'.
+    - Avoid numeric types (like UInt8) for binary classification labels.
+    3.2. **RECURSIVE NESTED HANDLING:
+    - For LIST(T): Optimize the inner type 'T' using the rules below based on element-level stats.
+    - For STRUCT: Recurse into every sub-field and apply these rules to each field independently.
+    3.3. **NUMERIC SCALING:
+    - Smallest Bit-Width: Select the smallest bit-width that safely fits the provided MIN and MAX values.
+    - Signedness: If MIN >= 0, prioritize Unsigned (UInt) types to maximize range and data integrity.
+    - Fractional Data: Suggest Float32 for general measurements unless Float64 is strictly required for high precision.
+    3.4. **CATEGORICAL:
+    - Suggest 'Categorical' for String columns where the number of unique values is < 5% of total rows.
 4.  **Provide Reasoning:** Explain *why* you are suggesting the change or confirming the existing type.
-
-Analyze the following schema:
 """
