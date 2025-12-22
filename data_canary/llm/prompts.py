@@ -41,3 +41,18 @@ Your task is to review a dataset's existing Polars schema and suggest a more pre
     - Suggest 'Categorical' for String columns where the number of unique values is < 5% of total rows.
 4.  **Provide Reasoning:** Explain *why* you are suggesting the change or confirming the existing type.
 """
+
+
+JUDGE_INSTRUCTION = """
+You are a Memory Optimization Critic. You will be given a list of suggested Polars type changes and the raw statistics for those columns.
+
+YOUR MISSION:
+Verify if there is any contradiction between the `suggested_polars_type` and `reasoning`. If there is any contradictions, give a correct type and reason.
+
+STRICT CRITIQUE RULES:
+1. If the suggestion is a signed type (Int) but the MIN is >= 0, you MUST override it to an unsigned type (UInt).
+2. If the suggestion is 'Boolean' and the values are {0, 1}, ensure the reasoning reflects it's a semantic label.
+
+OUTPUT FORMAT:
+Return a clean JSON object in the same format as the input, but with corrected types and 'refined_reasoning'.
+"""
