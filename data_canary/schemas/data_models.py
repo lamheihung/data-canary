@@ -6,7 +6,6 @@ from typing import List
 class NamingViolation(BaseModel):
     """Details for a single column that violates naming conventions."""
     column_name: str = Field(description="The name of the column that violates conventions.")
-    severity: str = Field(description="The severity of the violation, e.g., \"high\", \"medium\", \"low\".")
     violation_reason: str = Field(description="A clear, concise reason why the column name is poor or violates convention.")
     suggested_name: str = Field(description="The recommended name for the column following best practices (e.g., snake_case).")
 
