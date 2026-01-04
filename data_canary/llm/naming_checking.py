@@ -20,6 +20,7 @@ def get_naming_check_prompt(columns: List[str]) -> str:
     - {column_list_str}
 
     Strictly use the provided JSON schema for your output. If no violations are found, the `violations` list must be empty, and the `summary` must reflect a passing result.
+    Before giving the result, think step by step, and check the `column_name` and `suggested_name` value of each item in `violations` list to see if it meets all the conventions.
     """
     return prompt
 

@@ -6,7 +6,7 @@ from typing import Optional, Any, Dict, List
 
 from data_canary.core.basic_profiler import run_basic_checks 
 from data_canary.llm.naming_checking import run_llm_naming_check 
-from data_canary.llm.type_checking import run_llm_type_check, run_llm_type_judge
+from data_canary.llm.type_checking import run_llm_type_check
 from data_canary.schemas.data_models import NamingCheckReport, TypeCheckReport
 
 
@@ -68,7 +68,7 @@ def display_naming_check_report(report: Optional[NamingCheckReport]):
         violation_data = [v.model_dump() for v in report.violations]
         violation_df = pd.DataFrame(violation_data)
         
-        display_cols = ["column_name", "severity", "violation_reason", "suggested_name"]
+        display_cols = ["column_name", "violation_reason", "suggested_name"]
         st.dataframe(
             violation_df[display_cols].set_index("column_name"), 
             use_container_width=True
@@ -148,10 +148,7 @@ def main():
         # 2. Run All AI Checks (Simultaneously or sequentially for simplicity)
         with st.spinner("Running all AI checks with Gemini... This may take a moment."):
             naming_report = run_llm_naming_check(profile["schema"].keys())
-            type_report = run_llm_type_judge(
-                run_llm_type_check(profile["schema"], profile["columns"]),
-                profile["columns"]
-            )
+            type_report = run_llm_type_check(profile["schema"], profile["columns"])
         
         # --- Display Results ---
         
