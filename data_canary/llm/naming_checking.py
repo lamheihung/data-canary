@@ -1,20 +1,17 @@
 from typing import List, Optional
 from data_canary.llm.base import run_structured_llm_check
 from data_canary.schemas.data_models import NamingCheckReport
-from data_canary.llm.prompts import SYSTEM_PERSONA, NAMING_INSTRUCTION
+from data_canary.llm.prompts import NAMING_INSTRUCTION
 
 
 def get_naming_check_prompt(columns: List[str]) -> str:
     """
-    Constructs the detailed system prompt for the Naming check.
+    Constructs the user prompt for the Naming check.
     """
     column_list_str = "\n- ".join(columns)
-    
-    # Combined, clean prompt using the new constants
-    prompt = f"""
-    {SYSTEM_PERSONA.strip()}
-    
-    {NAMING_INSTRUCTION.strip()}
+
+    # User prompt with task instructions and data
+    prompt = f"""{NAMING_INSTRUCTION.strip()}
 
     Column Names:
     - {column_list_str}

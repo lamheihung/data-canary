@@ -2,9 +2,7 @@ import os
 
 # --- Configuration Settings ---
 
-# Read GEMINI_MODEL_NAME from environment variable, default to the stable 2.5-flash
-# The user must set this in their environment, e.g., export GEMINI_MODEL_NAME="gemini-2.5-flash"
-GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL_NAME", "gemini-2.5-flash")
-
-# The API key is read directly by the SDK, but we check for its existence here
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# For OpenAI and OpenAI-compatible API (e.g. Moonshot AI)
+OPENAI_MODEL_NAME = os.getenv("OPENAI_MODEL_NAME", "kimi-k2-thinking")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.moonshot.ai/v1")

@@ -146,7 +146,7 @@ def main():
             profile = run_basic_checks(df)
 
         # 2. Run All AI Checks (Simultaneously or sequentially for simplicity)
-        with st.spinner("Running all AI checks with Gemini... This may take a moment."):
+        with st.spinner("Running all AI checks... This may take a moment."):
             naming_report = run_llm_naming_check(profile["schema"].keys())
             type_report = run_llm_type_check(profile["schema"], profile["columns"])
         
