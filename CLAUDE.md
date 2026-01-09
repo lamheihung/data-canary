@@ -230,7 +230,6 @@ Focus: Scaling standards across organization
 - [Project Spec](docs/project-spec.md) - Full requirements and workflow
 - [Architecture](docs/architecture.md) - System design, patterns, and technical decisions
 - [Changelog](docs/changelog.md) - Version history
-- [Project Status](docs/project-status.md) - Current progress and metrics
 
 **Important:** Update files in the docs folder after major milestones and major additions to the project.
 
