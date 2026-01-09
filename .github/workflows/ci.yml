@@ -1,47 +1,164 @@
 # .github/workflows/ci.yml
 
-name: CI/CD Data Canary Quality Checks
+name: CI - Data Canary Quality Checks
 
 on:
   push:
     branches:
       - main
-      - feat/** 
+      - feat/**
+      - fix/**
   pull_request:
     branches:
       - main
 
+env:
+  PYTHON_VERSION: '3.13'
+
 jobs:
-  build_and_test:
+  lint-and-format:
+    name: Lint and Format
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-    - name: Install uv
-      run: pip install uv
+      - name: Install uv
+        run: pip install uv
 
-    - name: Install dependencies
-      run: uv sync --extra dev
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
 
-    # - name: Run Ruff Linter and Formatter
-    #   run: |
-    #     uv run ruff format . --check
-    #     uv run ruff check .
+      - name: Install dependencies
+        run: uv sync --extra dev
 
-    # - name: Run Bandit Security Scanner
-    #   run: |
-    #     uv run bandit -r data_canary
+      - name: Run Ruff Linter
+        run: uv run ruff check .
 
-    - name: Verify Polars and Polars is accessible
-      run: |
-        uv run python -c "import polars as pl; print(f'Polars Version: {pl.__version__}')"
+      - name: Run Ruff Formatter Check
+        run: uv run ruff format . --check
 
-    - name: Build Succeeded
-      run: echo "Code quality checks passed!"
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Run MyPy Type Checker
+        run: uv run mypy data_canary/
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Run Bandit Security Scanner
+        run: uv run bandit -r data_canary/ -f json -o bandit-report.json || true
+
+      - name: Upload Bandit Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-security-report
+          path: bandit-report.json
+
+      - name: Fail on High Severity Issues
+        run: uv run bandit -r data_canary/ -ll
+
+  build:
+    name: Build and Verify
+    runs-on: ubuntu-latest
+    needs: [lint-and-format, type-check, security-scan]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Verify Core Dependencies
+        run: |
+          uv run python -c "import polars as pl; print(f'✓ Polars Version: {pl.__version__}')"
+          uv run python -c "import pandas as pd; print(f'✓ Pandas Version: {pd.__version__}')"
+          uv run python -c "import streamlit; print(f'✓ Streamlit Version: {streamlit.__version__}')"
+          uv run python -c "import openai; print(f'✓ OpenAI Version: {openai.__version__}')"
+          uv run python -c "import pydantic; print(f'✓ Pydantic Version: {pydantic.__version__}')"
+
+      - name: Build Package
+        run: uv build
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Build Succeeded
+        run: echo "✅ All CI checks passed successfully!"

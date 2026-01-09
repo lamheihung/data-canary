@@ -3,7 +3,7 @@ name = "data-canary"
 version = "0.0.1"
 description = "AI-powered data quality copilot – finds everything wrong with your data in plain English"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.13"
 license = {text = "MIT"}
 authors = [
     {name = "Jonathan Lam", email = "lamheihung@gmail.com"}
@@ -30,3 +30,17 @@ dev = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.black]
+target-version = ["py313"]
+line-length = 100
+
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

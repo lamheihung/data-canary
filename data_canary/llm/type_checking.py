@@ -24,10 +24,12 @@ def get_type_check_prompt(schema: Dict[str, str], columns: List[Dict[str, Any]])
     return prompt
 
 
-def run_llm_type_check(schema: Dict[str, str], columns: List[Dict[str, Any]]) -> Optional[TypeCheckReport]:
+def run_llm_type_check(
+    schema: Dict[str, str], columns: List[Dict[str, Any]]
+) -> Optional[TypeCheckReport]:
     """
     Executes the LLM type check using the generalized base function.
     """
     prompt = get_type_check_prompt(schema, columns)
-    
+
     return run_structured_llm_check(prompt, TypeCheckReport)

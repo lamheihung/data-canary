@@ -27,5 +27,5 @@ def run_llm_naming_check(columns: List[str]) -> Optional[NamingCheckReport]:
     Executes the LLM naming check using the generalized base function.
     """
     prompt = get_naming_check_prompt(columns)
-    
+
     return run_structured_llm_check(prompt, NamingCheckReport)

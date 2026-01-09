@@ -1,5 +1,5 @@
 import json
-from typing import Optional, Type, TypeVar, List, Dict, Any
+from typing import Optional, Type, TypeVar
 from openai import OpenAI
 from pydantic import BaseModel, ValidationError
 from data_canary.config import OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL_NAME
@@ -54,14 +54,12 @@ def run_structured_llm_check(
     # Prepare messages with system persona + schema enforcement and user prompt
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_prompt}
+        {"role": "user", "content": user_prompt},
     ]
 
     try:
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=messages,
-            response_format={"type": "json_object"}
+        response = client.chat.completions.create(  # type: ignore[call-overload]
+            model=model_name, messages=messages, response_format={"type": "json_object"}
         )
     except Exception as e:
         print(f"ERROR: OpenAI API call failed: {e}")
@@ -78,8 +76,10 @@ def run_structured_llm_check(
         report = response_model.model_validate_json(content)
         return report
     except (json.JSONDecodeError, ValidationError) as e:
-        print(f"ERROR: Failed to parse or validate LLM JSON response for {response_model.__name__}: {e}")
-        if 'content' in locals():
+        print(
+            f"ERROR: Failed to parse or validate LLM JSON response for {response_model.__name__}: {e}"
+        )
+        if "content" in locals():
             print(f"Raw response text: {content}")
 
         return None

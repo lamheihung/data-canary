@@ -2,15 +2,15 @@ import polars as pl
 from typing import Any, Dict
 
 
-def get_columns_stats(col: str, series: pl.Series, top_n: int=5) -> Dict[str, Any]:
+def get_columns_stats(col: str, series: pl.Series, top_n: int = 5) -> Dict[str, Any]:
     """
-    Calculates fundamental statistics (nulls, distinct count, min/max, top values) 
+    Calculates fundamental statistics (nulls, distinct count, min/max, top values)
     for a single column using Polars.
-    
+
     Args:
         col: The name of the column.
         series: The Polars Series (column data) to analyze.
-        
+
     Returns:
         A dictionary containing the column's profile statistics and sample data.
     """
@@ -22,16 +22,12 @@ def get_columns_stats(col: str, series: pl.Series, top_n: int=5) -> Dict[str, An
     distinct_count = series.n_unique()
     # Show the top N value for exploration and provide type checking context for LLM
     if row_count > 0 and distinct_count > 0:
-        value_counts = (
-            series.value_counts(sort=True, name="count")
-            .head(top_n)
-            .to_dicts()
-        )
+        value_counts = series.value_counts(sort=True, name="count").head(top_n).to_dicts()
         # Format the top values for the prompt (e.g., ["value1 (20)", "value2 (15)"])
         top_values_list = [f"{item[col]} ({item['count']})" for item in value_counts]
     else:
         top_values_list = []
-    
+
     col_info = {
         "name": col,
         "dtype": dtype_str,
@@ -47,8 +43,8 @@ def get_columns_stats(col: str, series: pl.Series, top_n: int=5) -> Dict[str, An
             col_info["min"] = series.min()
             col_info["max"] = series.max()
         else:
-             col_info["min"] = None
-             col_info["max"] = None
+            col_info["min"] = None
+            col_info["max"] = None
 
     return col_info
 
@@ -56,21 +52,21 @@ def get_columns_stats(col: str, series: pl.Series, top_n: int=5) -> Dict[str, An
 def run_basic_checks(df: pl.DataFrame) -> Dict[str, Any]:
     """
     Runs basic data profiling checks (row count, duplicates, null ratios) using Polars.
-    
+
     Args:
         df: The input Polars DataFrame.
-        
+
     Returns:
         A dictionary containing the full data profile and a list of issues found.
     """
     row_count = len(df)
-    
+
     # Calculate duplicate rows
     duplicate_rows = df.filter(df.is_duplicated()).height
-    
+
     # Extract schema
     schema = {col: str(df.dtypes[i]) for i, col in enumerate(df.columns)}
-    
+
     # Calculate stats for all columns
     columns = [get_columns_stats(col, df[col]) for col in df.columns]
 
@@ -105,7 +101,7 @@ def run_basic_checks(df: pl.DataFrame) -> Dict[str, Any]:
         "duplicate_rows": duplicate_rows,
         "schema": schema,
         "columns": columns,
-        "issues": issues
+        "issues": issues,
     }
 
     return profile
