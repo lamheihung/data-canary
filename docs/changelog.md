@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Column role detection (PK, Metric, Event Marker, Category)
 - Source → Target name mapping for traceability
 
+### Changed
+- **Python Version**: Upgraded from Python 3.10 to Python 3.13
+  - Updated all documentation (README.md, badges, prerequisites)
+  - Updated CI pipeline to use Python 3.13
+  - Updated pyproject.toml dependencies and tool configurations
+
 ### Planned
 - Delta ingestion mode with automatic drift detection
 - Health Report generation with warnings/errors

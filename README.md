@@ -1,7 +1,7 @@
 # 🐤 Data Canary AI: The Schema Designer & Drift Detection Companion
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
+[![Python: 3.13+](https://img.shields.io/badge/Python-3.13%2B-blue)](https://www.python.org/)
 [![Framework: Polars](https://img.shields.io/badge/Polars-v0.20%2B-purple)](https://www.pola.rs/)
 [![CI Status](https://github.com/lamheihung/data-canary/actions/workflows/ci.yml/badge.svg)](https://github.com/lamheihung/data-canary/actions/workflows/ci.yml)
 
@@ -25,7 +25,7 @@ By leveraging Python Polars for high-performance profiling and LLMs for semantic
 
 ### Prerequisites
 
-1.  **Python 3.10+**
+1.  **Python 3.13+**
 2.  **API Key:** Get an API key from any OpenAI-compatible provider and set it as an environment variable:
     ```bash
     export OPENAI_API_KEY="YOUR_API_KEY"
