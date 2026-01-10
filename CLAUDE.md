@@ -30,8 +30,11 @@ data_canary/
 docs/
 ├── project-spec.md           # Full requirements and workflow definition
 ├── architecture.md           # System design, patterns, and technical decisions
-├── changelog.md              # Version history and release notes
-└── project-status.md         # Current progress and metrics
+├── decision-records.md       # Architectural decision records (ADRs)
+├── development-guide.md      # Development workflows, troubleshooting, contributing
+├── agent-usage-guide.md      # Agent selection and tool usage logic
+├── project-status.md         # Current phase, blockers, next steps
+└── changelog.md              # Version history and release notes
 ```
 
 ## Architecture Overview
@@ -107,62 +110,6 @@ Currently minimal test coverage. When adding tests:
 - Mock API calls for LLM modules
 - Verify Pydantic model validation
 
-## Repository Etiquette
-
-### Branch Naming
-All branches must follow a structured naming convention based on the type of work being performed:
-
-*   **Features:** `feature/<description>` (e.g., `feature/user-profile-page`)
-*   **Bug Fixes:** `fix/<description>` (e.g., `fix/auth-bug`)
-*   **Documentation:** `docs/<description>` (e.g., `docs/update-readme`)
-*   **Hotfixes:** `hotfix/<description>`
-
-The description should be concise and use lowercase words separated by dashes.
-
-### Protected Branches
-The `main` and `develop` branches are protected. **Claude must never push directly to these branches**. All changes must go through a pull request and peer review process.
-
-### Git workflow for major changes
-1. Create a new branch: `git checkout -b feature/your-feature-name`
-2. Develop and commit on the feature branch
-
-### Commits
-- Write clear commit messages describing the change
-- Keep commits focused on single changes
-
-## Development Commands
-
-### Installation
-```bash
-# Create virtual environment
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install dependencies
-uv pip install -e .[dev]
-```
-
-### Running the Application
-```bash
-# Launch Streamlit UI
-streamlit run data_canary/app.py
-```
-
-### Development Tools
-```bash
-# Format code
-uv run ruff format .
-
-# Lint code (currently disabled in CI)
-uv run ruff check .
-
-# Security scan (currently disabled in CI)
-uv run bandit -r data_canary
-
-# Run tests
-uv run pytest
-```
-
 ## Current Status: Basic Prototype
 
 The current implementation is a basic prototype that provides:
@@ -227,34 +174,15 @@ Focus: Scaling standards across organization
 - [ ] Centralized governance features
 
 ## Documentation
-- [Project Spec](docs/project-spec.md) - Full requirements and workflow
+- [Project Spec](docs/project-spec.md) - Full requirements and workflow definition
 - [Architecture](docs/architecture.md) - System design, patterns, and technical decisions
-- [Changelog](docs/changelog.md) - Version history
+- [Decision Records](docs/decision-records.md) - Architectural decisions (ADRs)
+- [Development Guide](docs/development-guide.md) - Workflows, troubleshooting, contributing guidelines
+- [Agent Usage Guide](docs/agent-usage-guide.md) - Agent selection and tool usage logic
+- [Project Status](docs/project-status.md) - Current phase, blockers, next steps
+- [Changelog](docs/changelog.md) - Version history and release notes
 
-**Important:** Update files in the docs folder after major milestones and major additions to the project.
-
-## Constraints & Policies
-
-**Security - MUST follow:**
-- Never expose `OPENAI_API_KEY`
-- ALWAYS USE environment variables for secrets
-- NEVER commit `.env` or any file with API keys
-- Validate and sanitize all user input
-
-**Coding Quality:**
-- Follow PEP 8 – Style Guide for Python Code
-- Write Google style docstring for every class and function
-- No `any` types without justification
-
-## CI/CD
-
-GitHub Actions workflow runs on:
-- Push to `main` or `feat/**` branches
-- Pull requests to `main`
-
-Current checks: Python 3.0, dependency installation, basic import verification
-
-Linting and security scans are commented out (future work)
+**Important:** See `docs/development-guide.md` for detailed development workflows, Git practices, security policies, and troubleshooting.
 
 ## References
 - [Polars Documentation](https://docs.pola.rs/)
