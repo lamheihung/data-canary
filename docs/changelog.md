@@ -9,16 +9,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Human-in-the-loop approval workflow for schema suggestions
-- Parquet output generation
 - Metadata contract creation (Identity + Physical Schema + Statistical Profile)
 - Column role detection (PK, Metric, Event Marker, Category)
-- Source → Target name mapping for traceability
 
 ### Changed
-- **Python Version**: Upgraded from Python 3.10 to Python 3.13
-  - Updated all documentation (README.md, badges, prerequisites)
-  - Updated CI pipeline to use Python 3.13
-  - Updated pyproject.toml dependencies and tool configurations
+- **Polars API**: Migration from Eager API to Lazy API (in progress)
+
+### Planned
+- Delta ingestion mode with automatic drift detection
+- Health Report generation with warnings/errors
+- Batch processing for multiple/daily files
+- Version control for metadata contracts
+
+## [0.0.3] - 2026-01-11
+
+### Added
+- **MVP0 Phase 2: Contract Builder & Export Module**
+  - `data_canary/core/contract_builder.py`: Schema transformation and contract creation
+    - `build_physical_schema()`: Build schema with AI suggestions and user override support
+    - `apply_schema_transform()`: Apply schema changes to Polars DataFrames
+    - `create_metadata_contract()`: Assemble complete metadata contracts
+    - `validate_contract()`: Comprehensive contract validation
+  - `data_canary/core/export.py`: Output generation
+    - `generate_parquet()`: Convert DataFrames to Parquet format
+    - `save_metadata_contract()`: Serialize contracts to JSON
+    - `generate_outputs()`: Generate both files in single operation
+  - **Comprehensive test coverage**: 44 new tests (24 + 20)
+    - `tests/test_contract_builder.py`: Full workflow testing
+    - `tests/test_export.py`: Output generation testing
+  - **Override precedence logic**: User > AI > Original
+  - **Column order preservation**: Via column_index field
+  - **LLM usage tracking**: Minimal implementation for cost transparency
+  - **Column role support**: For vendor-provided metadata (PK, Metric, etc.)
+
+### Fixed
+- **Phase 2 Bug Fix**: Removed ~130 lines of duplicate code in contract_builder.py
+  - Fixed undefined `dtype_str` variable
+  - Removed duplicate `apply_schema_transform()` function
+  - Applied ruff formatting
+  - All CI checks now passing
+
+### Documentation
+- **New Development Guide**: `docs/development-guide.md`
+  - Pre-commit checklist with step-by-step verification
+  - Git workflow with branch lifecycle
+  - Code quality standards and Python guidelines
+  - Common issues and solutions
+  - Agent selection logic
+- **New Agent Usage Guide**: `docs/agent-usage-guide.md`
+  - When to use direct tools vs specialized agents
+  - Project-specific agent recommendations by phase
+  - Decision framework and agent categories
+- **New Project Status**: `docs/project-status.md`
+  - Current phase and implementation status
+  - Critical blockers and technical debt
+  - Next steps and priority order
+  - Git history summary and quick commands
+
+### Changed
+- **Total Test Coverage**: 64 tests (20 + 44), 100% passing
+- **Module Line Count**: data_canary/core/contract_builder.py reduced from 532 to 402 lines
+- **CI Pipeline**: All 4 checks consistently passing (Lint, Security, Type Check, Build)
 
 ### Planned
 - Delta ingestion mode with automatic drift detection

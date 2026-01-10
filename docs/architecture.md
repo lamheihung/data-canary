@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Executive Summary
+## Executive Summary
 
 Data Canary AI is an AI-powered data engineering tool that automates schema design, data quality monitoring, and drift detection. It bridges the gap between raw data discovery and production-ready data ingestion through an intelligent, human-in-the-loop workflow.
 
@@ -19,9 +19,9 @@ Data Canary AI is an AI-powered data engineering tool that automates schema desi
 
 ---
 
-## 2. System Architecture
+## System Architecture
 
-### 2.1 High-Level Architecture
+### High-Level Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -57,9 +57,9 @@ Data Canary AI is an AI-powered data engineering tool that automates schema desi
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2.2 Component Responsibilities
+### Component Responsibilities
 
-#### 2.2.1 UI Layer (`data_canary/app.py`)
+#### UI Layer (`data_canary/app.py`)
 **Purpose:** Interactive web interface for data upload, review, and approval
 
 **Key Responsibilities:**
@@ -75,7 +75,7 @@ Data Canary AI is an AI-powered data engineering tool that automates schema desi
 - Chose Streamlit over Dash/Gradio for faster MVP development
 - Tabbed interface separates concerns: Raw Data, Profile, AI Governance
 
-#### 2.2.2 Data Ingestion Layer
+#### Data Ingestion Layer
 **Purpose:** Handle file I/O and data loading into Polars
 
 **Key Responsibilities:**
@@ -91,7 +91,7 @@ Data Canary AI is an AI-powered data engineering tool that automates schema desi
 - Support database connections (PostgreSQL, Snowflake)
 - Add S3/GCS cloud storage support
 
-#### 2.2.3 Profiling Engine (`data_canary/core/basic_profiler.py`)
+#### Profiling Engine (`data_canary/core/basic_profiler.py`)
 **Purpose:** Generate statistical fingerprints and basic quality metrics
 
 **Key Responsibilities:**
@@ -185,7 +185,7 @@ You MUST respond with JSON following this schema:
 - **Cons:** Less reliable than native JSON schema support
 - **Mitigation:** Strong Pydantic validation with clear error messages
 
-#### 2.2.5 Schema & Data Models (`data_canary/schemas/data_models.py`)
+#### chema & Data Models (`data_canary/schemas/data_models.py`)
 **Purpose:** Define structured output contracts for LLMs
 
 **Models:**
@@ -200,7 +200,7 @@ You MUST respond with JSON following this schema:
 - **Evolution:** Pydantic v2 provides easy model versioning
 - **Validation:** Automatic validation of LLM outputs
 
-#### 2.2.6 Configuration Management (`data_canary/config.py`)
+#### Configuration Management (`data_canary/config.py`)
 **Purpose:** Centralized configuration and secrets management
 
 **Environment Variables:**
@@ -219,9 +219,9 @@ You MUST respond with JSON following this schema:
 
 ---
 
-## 3. Data Flow
+## Data Flow
 
-### 3.1 Current Prototype Flow
+### Current Prototype Flow
 
 ```
 User Uploads File
@@ -267,7 +267,7 @@ User Uploads File
 └──────────────────────────┘
 ```
 
-### 3.2 Target MVP0 Flow
+### Target MVP0 Flow
 
 ```
 User Uploads File
@@ -321,7 +321,7 @@ User Uploads File
 └──────────────────────────┘
 ```
 
-### 3.3 MVP1 Architecture (Dual-Mode: Initialization + Delta Ingestion)
+### MVP1 Architecture (Dual-Mode: Initialization + Delta Ingestion)
 
 MVP1 introduces **automatic mode detection** based on whether a metadata contract exists. This means MVP1 includes ALL MVP0 functionality plus delta ingestion capabilities.
 
@@ -485,9 +485,9 @@ def process_data(file_path, table_name):
 
 ---
 
-## 4. Metadata Contract Structure
+## Metadata Contract Structure
 
-### 4.1 Contract Design Philosophy
+### Contract Design Philosophy
 
 The `metadata.json` file serves as the "single source of truth" for a dataset's schema, quality baselines, and ingestion history. It's inspired by software engineering's "Contract Testing" pattern applied to data engineering.
 
@@ -497,7 +497,7 @@ The `metadata.json` file serves as the "single source of truth" for a dataset's 
 3. **Human/Machine Readable:** JSON format, well-documented schema
 4. **Traceability:** Links back to source systems and raw files
 
-### 4.2 JSON Schema Structure
+### JSON Schema Structure
 
 ```json
 {
@@ -590,7 +590,7 @@ The `metadata.json` file serves as the "single source of truth" for a dataset's 
 }
 ```
 
-### 4.3 Contract Evolution
+### Contract Evolution
 
 **Version 0 (MVP0 - Current Target):**
 - Basic Identity + Physical Schema + Statistical Profile
@@ -611,9 +611,9 @@ The `metadata.json` file serves as the "single source of truth" for a dataset's 
 
 ---
 
-## 5. Design Patterns & Best Practices
+## Design Patterns & Best Practices
 
-### 5.1 LLM Prompt Engineering
+### LLM Prompt Engineering
 
 **System Prompt Structure:**
 ```
@@ -642,7 +642,7 @@ Analyze and provide recommendations.
 3. **Iterative refinement** - "Think step by step" in prompts
 4. **Self-check instructions** - Ask model to validate its own output
 
-### 5.2 Error Handling Strategy
+### Error Handling Strategy
 
 **Three-Layer Validation:**
 1. **Input Validation:** Check file format, size limits, basic structure
@@ -655,7 +655,7 @@ Analyze and provide recommendations.
 - **AI Errors:** Invalid JSON → Retry with temperature adjustment
 - **Data Errors:** Schema violations → Add to "issues" list
 
-### 5.3 Memory Management
+### Memory Management
 
 **Polars Lazy API Usage:**
 ```python
@@ -677,7 +677,7 @@ for chunk in pl.scan_csv("huge.csv").collect(streaming=True).iter_chunks():
     process(chunk)
 ```
 
-### 5.4 Testing Strategy
+### Testing Strategy
 
 **Current State:** Minimal test coverage (prototype phase)
 
@@ -718,9 +718,9 @@ def test_naming_check_handles_empty_response(mock_llm_response):
 
 ---
 
-## 6. Technology Stack Justification
+## Technology Stack Justification
 
-### 6.1 Polars (Data Processing)
+### Polars (Data Processing)
 
 **Why Polars over Pandas:**
 | Feature | Polars | Pandas |
@@ -741,7 +741,7 @@ def test_naming_check_handles_empty_response(mock_llm_response):
 - Phase 2: Convert Streamlit display layer to Polars (reduce pandas usage)
 - Phase 3: Full Polars ecosystem (when Streamlit supports native Polars better)
 
-### 6.2 OpenAI API (LLM Integration)
+### OpenAI API (LLM Integration)
 
 **Why OpenAI API Pattern (vs Gemini/Anthropic native):**
 
@@ -768,7 +768,7 @@ def test_naming_check_handles_empty_response(mock_llm_response):
 
 **Decision:** Start with OpenAI-compatible pattern for maximum flexibility
 
-### 6.3 Pydantic v2 (Data Validation)
+### Pydantic v2 (Data Validation)
 
 **Why Pydantic over Dataclasses:**
 - ✅ Rich validation (types, ranges, custom validators)
@@ -782,7 +782,7 @@ def test_naming_check_handles_empty_response(mock_llm_response):
 - API request/response models
 - Metadata contract schemas
 
-### 6.4 Streamlit (UI Framework)
+### Streamlit (UI Framework)
 
 **Why Streamlit over Alternatives:**
 
@@ -806,9 +806,9 @@ def test_naming_check_handles_empty_response(mock_llm_response):
 
 ---
 
-## 7. Scalability Considerations
+## Scalability Considerations
 
-### 7.1 Current Limitations (Prototype)
+### Current Limitations (Prototype)
 
 **Known Bottlenecks:**
 1. **Single-threaded Streamlit:** UI blocks during processing
@@ -823,7 +823,7 @@ def test_naming_check_handles_empty_response(mock_llm_response):
    - *Mitigation:* Limit preview to sample rows
    - *Fix:* Full Polars-native UI when Streamlit supports it
 
-### 7.2 Scaling Strategies
+### Scaling Strategies
 
 **For Large Files (10GB+):**
 ```python
@@ -851,9 +851,9 @@ for i in range(0, total_rows, batch_size):
 
 ---
 
-## 8. Security Architecture
+## Security Architecture
 
-### 8.1 API Key Management
+### API Key Management
 
 **Threat Model:**
 - API key exposure in logs
@@ -883,7 +883,7 @@ if not OPENAI_API_KEY:
 *.pem
 ```
 
-### 8.2 Input Validation
+### Input Validation
 
 **File Upload Security:**
 ```python
@@ -907,7 +907,7 @@ def validate_upload(file):
 - Use parameterized queries (even though we use Polars)
 - Validate column names against regex patterns
 
-### 8.3 Data Privacy
+### Data Privacy
 
 **Handling Sensitive Data:**
 - Add flag for PII detection (future feature)
@@ -923,9 +923,9 @@ def validate_upload(file):
 
 ---
 
-## 9. Future Architecture (MVP1 & MVP2)
+## Future Architecture (MVP1 & MVP2)
 
-### 9.1 MVP1 Architecture (Delta Ingestion)
+### MVP1 Architecture (Delta Ingestion)
 
 **New Components:**
 ```
@@ -961,7 +961,7 @@ def validate_upload(file):
 - Configurable alert thresholds
 - Historical trend analysis
 
-### 9.2 MVP2 Architecture (Governance)
+### MVP2 Architecture (Governance)
 
 **Governance Layer:**
 ```
@@ -1001,94 +1001,9 @@ def validate_upload(file):
 
 ---
 
-## 10. Decision Records
+## Performance Benchmarks
 
-### 10.1 ADR-001: Polars as Primary Data Frame Library
-
-**Decision:** Use Polars instead of Pandas for all new data processing code
-
-**Status:** ✅ Accepted
-
-**Date:** 2024-12-01
-
-**Context:**
-- Prototype used pandas for simplicity
-- Performance issues emerged with large files (>1GB)
-- Memory usage was unpredictable
-- No built-in support for lazy/streaming operations
-
-**Decision:**
-- Migrate to Polars LazyFrame API for all profiling operations
-- Keep pandas only for UI layer compatibility
-- Plan full migration when Streamlit supports native Polars
-
-**Consequences:**
-- ✅ 5-10x performance improvement
-- ✅ Constant memory usage regardless of file size
-- ✅ Built-in parallel processing
-- ⚠️ Learning curve for team members familiar with pandas
-- ⚠️ Some UI components still require pandas conversion
-
-### 10.2 ADR-002: OpenAI API Pattern for LLM Integration
-
-**Decision:** Use OpenAI-compatible API instead of provider-native SDKs
-
-**Status:** ✅ Accepted
-
-**Date:** 2025-01-09
-
-**Context:**
-- Gemini native SDK had better JSON schema support
-- But we need flexibility to switch providers based on:
-  - Cost differences ($/token varies significantly)
-  - Rate limits (some providers throttle heavily)
-  - Model availability (new models released frequently)
-  - Local deployment needs (Llama for sensitive data)
-
-**Decision:**
-- Use `openai` Python package with `base_url` parameter
-- Implement schema enforcement via prompt engineering
-- Create abstraction layer for future multi-provider support
-
-**Consequences:**
-- ✅ Works with Moonshot AI, OpenAI, local Llama, etc.
-- ✅ Easy provider switching via environment variables
-- ⚠️ Less reliable than native JSON schema validation
-- ⚠️ Larger prompts (schema included in every request)
-- ✅ Mitigation: Strong Pydantic validation catches errors
-
-### 10.3 ADR-003: Streamlit for UI Framework
-
-**Decision:** Use Streamlit for MVP0-1, evaluate alternatives for MVP2
-
-**Status:** ✅ Accepted (with future evaluation clause)
-
-**Date:** 2024-10-15
-
-**Context:**
-- Need rapid prototyping for data-focused UI
-- Team familiar with Python, not JavaScript/React
-- Want to focus on backend/AI features first
-- Interactive data exploration critical for MVP0
-
-**Decision:**
-- Use Streamlit for MVP0 and MVP1
-- Bookmark migration path to Dash or React for MVP2 if needed
-- Keep UI layer thin to minimize migration cost
-
-**Consequences:**
-- ✅ Fast development (~3x faster than React)
-- ✅ Built-in data exploration widgets
-- ✅ Minimal boilerplate code
-- ⚠️ Limited customization options
-- ⚠️ State management can be complex
-- ⚠️ Not ideal for multi-user scenarios
-
----
-
-## 11. Performance Benchmarks
-
-### 11.1 Profiling Performance
+### Profiling Performance
 
 **Test Setup:**
 - File: 1GB CSV (10M rows, 20 columns)
@@ -1108,7 +1023,7 @@ Pandas (Full):    38.3s |  Peak RAM: 2.1GB ⚠️
 - Pandas full load risks OOM on larger files
 - Streaming works well for >10GB files
 
-### 11.2 LLM Response Time
+### LLM Response Time
 
 **Test Setup:**
 - Model: kim10k2-thinking
@@ -1128,7 +1043,7 @@ Total LLM time:   5.4s ± 0.7s
 - Use faster model for simple checks, slower for complex
 - Add streaming responses with partial updates
 
-### 11.3 End-to-End User Experience
+### End-to-End User Experience
 
 **MVP0 Target Flow:**
 ```
@@ -1151,73 +1066,9 @@ Goal:                   <10s (✅ Achievable)
 
 ---
 
-## 12. Deployment Options
+## Monitoring & Observability
 
-### 12.1 Local Development
-
-```bash
-# Install
-uv pip install -e .[dev]
-
-# Configure
-cp .env.example .env
-# Edit .env with your API keys
-
-# Run
-streamlit run data_canary/app.py
-```
-
-**Use Cases:**
-- Individual data engineers
-- Prototyping and exploration
-- Sensitive data (no cloud)
-- Local file processing
-
-### 12.2 Docker Deployment
-
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-EXPOSE 8501
-
-CMD ["streamlit", "run", "data_canary/app.py", \
-     "--server.port=8501", \
-     "--server.address=0.0.0.0"]
-```
-
-**Use Cases:**
-- Consistent team environments
-- CI/CD pipelines
-- Cloud deployment
-- Reproducible analysis
-
-### 12.3 Cloud Deployment (Future)
-
-**AWS ECS/Fargate:**
-- Managed container orchestration
-- Auto-scaling based on load
-- Integrated with S3 data sources
-
-**GCP Cloud Run:**
-- Serverless container deployment
-- Pay-per-use pricing
-- Easy integration with BigQuery/GCS
-
-**Self-hosted Kubernetes:**
-- Full control over infrastructure
-- Multi-tenant isolation
-- Advanced networking policies
-
----
-
-## 13. Monitoring & Observability
-
-### 13.1 LLM Usage Tracking
+### LLM Usage Tracking
 
 ```python
 # Track token usage
@@ -1240,7 +1091,7 @@ logger.info("LLM Call", extra=llm_metrics)
 - Error rates by model
 - Cache hit rates
 
-### 13.2 Data Quality Metrics
+### Data Quality Metrics
 
 **Drift Detection Dashboard:**
 - Schema drift frequency
@@ -1255,7 +1106,7 @@ logger.info("LLM Call", extra=llm_metrics)
 - UI interaction latency
 - Error rates by component
 
-### 13.3 Alerting Rules
+### Alerting Rules
 
 **Error Alerts:**
 - LLM API failures > 5% in 10 minutes
@@ -1271,9 +1122,9 @@ logger.info("LLM Call", extra=llm_metrics)
 
 ---
 
-## 14. API Reference (Future)
+## API Reference (Future)
 
-### 14.1 REST API Design (MVP2)
+### REST API Design (MVP2)
 
 ```yaml
 openapi: 3.0.0
@@ -1333,137 +1184,7 @@ paths:
 
 ---
 
-## 15. Troubleshooting Guide
-
-### 15.1 Common Issues
-
-**"OPENAI_API_KEY not found"**
-```bash
-# Solution: Export environment variable
-export OPENAI_API_KEY="sk-..."
-
-# Or create .env file (not committed to git)
-echo "OPENAI_API_KEY=sk-..." > .env
-```
-
-**"File too large" error**
-```python
-# Solution: Use streaming
-# Currently limited by Streamlit's maxUploadSize
-# For very large files, use the Python API directly
-from data_canary.core import run_basic_checks
-import polars as pl
-
-df = pl.scan_csv("huge_file.csv")
-result = run_basic_checks(df)
-```
-
-**"LLM returned invalid JSON"**
-```python
-# This indicates the AI didn't follow schema instructions
-# Mitigations:
-# 1. Check schema is included in system prompt
-# 2. Try a more capable model (e.g., kim
-```
-
-### 15.2 Performance Tuning
-
-**Slow profiling on large files:**
-```python
-# Enable Polars streaming
-df = pl.scan_csv("large.csv")
-result = df.collect(streaming=True)  # Process in chunks
-
-# Or use lazy operations only
-stats = df.select([
-    pl.col("*").null_count(),
-    pl.col("*").approx_unique()
-]).collect()  # Minimal memory usage
-```
-
-**LLM timing out:**
-```python
-# Increase timeout in base.py
-response = client.chat.completions.create(
-    model=model_name,
-    messages=messages,
-    timeout=60.0  # Increase from default 30s
-)
-```
-
-### 15.3 Debug Mode
-
-```python
-# Enable verbose logging
-export LOG_LEVEL=DEBUG
-
-# In code
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
-# Check LLM prompts
-# In llm/base.py, add:
-print(f"System prompt: {system_prompt}")
-print(f"User prompt: {user_prompt}")
-```
-
----
-
-## 16. Contributing Guidelines
-
-### 16.1 Development Workflow
-
-1. **Branch Naming:**
-   ```bash
-   # Feature: feature/<JIRA-ID>-<description>
-   git checkout -b feature/DATA-123-human-override
-
-   # Fix: fix/<JIRA-ID>-<description>
-   git checkout -b fix/DATA-456-null-pointer
-
-   # Docs: docs/<description>
-   git checkout -b docs/api-endpoints
-   ```
-
-2. **Code Quality:**
-   ```bash
-   # Format code
-   uv run ruff format .
-
-   # Type checking
-   uv run mypy data_canary/
-
-   # Security scan
-   uv run bandit -r data_canary/
-   ```
-
-3. **Testing:**
-   ```bash
-   # Run tests
-   uv run pytest tests/ -v
-
-   # Coverage
-   uv run pytest --cov=data_canary --cov-report=html
-   ```
-
-4. **Documentation:**
-   - Update docstrings for new functions
-   - Add to CHANGELOG.md for user-facing changes
-   - Update this architecture.md for major changes
-
-### 16.2 Code Review Checklist
-
-- [ ] **Functionality:** Does it work as intended?
-- [ ] **Tests:** Are there tests for new code?
-- [ ] **Documentation:** Are docstrings updated?
-- [ ] **Type hints:** Are types specified?
-- [ ] **Security:** No secrets, input validated?
-- [ ] **Performance:** Appropriate data structures?
-- [ ] **Error handling:** Graceful degradation?
-
----
-
-## 17. Glossary
+## Glossary
 
 - **AI-First Design:** Architecture where AI capabilities are core, not add-on features
 - **Metadata Contract:** JSON file defining schema, quality baselines, and ingestion history
@@ -1476,7 +1197,7 @@ print(f"User prompt: {user_prompt}")
 
 ---
 
-## 18. References
+## References
 
 - [Polars Documentation](https://docs.pola.rs/)
 - [Pydantic v2 Docs](https://docs.pydantic.dev/2.0/)
@@ -1484,6 +1205,15 @@ print(f"User prompt: {user_prompt}")
 - [OpenAI API Docs](https://platform.openai.com/docs/)
 - [Project Specification](./project-spec.md)
 - [Development Setup](../.env.example)
+
+---
+
+## Related Documentation
+
+This architecture document focuses on system design and technical decisions. For related guidance, see:
+
+- [docs/development-guide.md](development-guide.md) - Development workflows, code quality standards, troubleshooting, and contributing guidelines
+- [docs/decision-records.md](decision-records.md) - Detailed architectural decision records (ADRs) including trade-off analysis
 
 ---
 
