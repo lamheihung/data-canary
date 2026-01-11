@@ -204,7 +204,9 @@ def display_review_interface(
     # Display review table
     st.markdown("### 📋 Schema Review")
     st.dataframe(
-        review_df[["Column Index", "Source Name", "AI Suggested Name", "Source Type", "AI Suggested Type"]],
+        review_df[
+            ["Column Index", "Source Name", "AI Suggested Name", "Source Type", "AI Suggested Type"]
+        ],
         use_container_width=True,
     )
 
@@ -217,7 +219,9 @@ def display_review_interface(
 
     # Output directory selection
     output_dir = st.text_input(
-        "Output Directory", value=default_output_dir, placeholder="e.g., ./output or /path/to/output"
+        "Output Directory",
+        value=default_output_dir,
+        placeholder="e.g., ./output or /path/to/output",
     )
 
     # Expanders for detailed editing (only collect inputs, don't apply yet)
@@ -229,7 +233,9 @@ def display_review_interface(
         for idx, physical_col in enumerate(physical_schema):
             col_idx = idx % 3
             with cols[col_idx]:
-                current_override = current_overrides.get(physical_col.source_name, {}).get("name", "")
+                current_override = current_overrides.get(physical_col.source_name, {}).get(
+                    "name", ""
+                )
                 new_name = st.text_input(
                     f"Column: {physical_col.source_name}",
                     value=current_override,
@@ -265,11 +271,15 @@ def display_review_interface(
         for idx, physical_col in enumerate(physical_schema):
             col_idx = idx % 3
             with cols[col_idx]:
-                current_override = current_overrides.get(physical_col.source_name, {}).get("type", "")
+                current_override = current_overrides.get(physical_col.source_name, {}).get(
+                    "type", ""
+                )
                 # Default to target_type if no user override (preserves AI suggestion)
                 current_index = (
-                    common_types.index(current_override) if current_override in common_types
-                    else common_types.index(physical_col.target_type) if physical_col.target_type in common_types
+                    common_types.index(current_override)
+                    if current_override in common_types
+                    else common_types.index(physical_col.target_type)
+                    if physical_col.target_type in common_types
                     else 0
                 )
 
@@ -420,9 +430,7 @@ def handle_approval(
 
         # Generate outputs
         with st.spinner("Generating Parquet file..."):
-            parquet_path = generate_parquet(
-                transformed_df, f"{output_dir}/{table_name}.parquet"
-            )
+            parquet_path = generate_parquet(transformed_df, f"{output_dir}/{table_name}.parquet")
 
         with st.spinner("Generating metadata contract..."):
             metadata_path = save_metadata_contract(

@@ -209,4 +209,3 @@ class MetadataContract(BaseModel):
         default=None,
         description="Optional custom column roles for vendor-provided metadata.",
     )
-
