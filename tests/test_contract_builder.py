@@ -22,7 +22,6 @@ from data_canary.schemas.data_models import (
     TypeSuggestion,
     TypeCheckReport,
     ColumnRole,
-    LLMUsage,
 )
 
 
@@ -41,7 +40,7 @@ class TestBuildPhysicalSchema:
         assert len(physical_schema) == 2
         assert physical_schema[0].source_name == "user_id"
         assert physical_schema[0].target_name == "user_id"  # No overrides
-        assert physical_schema[0].data_type == "Int64"
+        assert physical_schema[0].target_type == "Int64"
         assert physical_schema[0].is_nullable is False
         assert physical_schema[1].column_index == 1
 
@@ -104,7 +103,7 @@ class TestBuildPhysicalSchema:
         physical_schema = build_physical_schema(columns, type_report=type_report)
 
         assert physical_schema[0].ai_suggested_type == "UInt32"
-        assert physical_schema[0].data_type == "UInt32"  # AI suggestion used as default
+        assert physical_schema[0].target_type == "UInt32"  # AI suggestion used as default
         assert physical_schema[1].ai_suggested_type == "Decimal(10,2)"
 
     def test_build_physical_schema_with_user_overrides(self):
@@ -148,7 +147,7 @@ class TestBuildPhysicalSchema:
         # Check default type when no AI or user type specified
         assert physical_schema[1].ai_suggested_type is None
         assert physical_schema[1].user_override_type == "Decimal(12,4)"
-        assert physical_schema[1].data_type == "Decimal(12,4)"
+        assert physical_schema[1].target_type == "Decimal(12,4)"
 
     def test_build_physical_schema_with_roles(self):
         """Test building schema with column roles."""
@@ -208,14 +207,16 @@ class TestApplySchemaTransform:
             PhysicalColumn(
                 source_name="User ID",
                 target_name="user_id",
-                data_type="Int64",
+                source_type="Int64",
+                target_type="Int64",
                 is_nullable=False,
                 column_index=0,
             ),
             PhysicalColumn(
                 source_name="Sale Date",
                 target_name="sale_date",
-                data_type="String",
+                source_type="String",
+                target_type="String",
                 is_nullable=False,
                 column_index=1,
             ),
@@ -249,14 +250,16 @@ class TestApplySchemaTransform:
             PhysicalColumn(
                 source_name="user_id",
                 target_name="user_id",
-                data_type="Int64",  # Cast to Int64
+                source_type="Int64",  # Cast to Int64
+                target_type="Int64",
                 is_nullable=False,
                 column_index=0,
             ),
             PhysicalColumn(
                 source_name="amount",
                 target_name="amount",
-                data_type="Float64",  # Cast to Float64
+                source_type="Float64",  # Cast to Float64
+                target_type="Float64",
                 is_nullable=False,
                 column_index=1,
             ),
@@ -285,14 +288,16 @@ class TestApplySchemaTransform:
             PhysicalColumn(
                 source_name="User ID",
                 target_name="user_id",
-                data_type="Int64",
+                source_type="Int64",
+                target_type="Int64",
                 is_nullable=False,
                 column_index=0,
             ),
             PhysicalColumn(
                 source_name="RevenueUSD",
                 target_name="revenue_usd",
-                data_type="Float64",
+                source_type="Float64",
+                target_type="Float64",
                 is_nullable=False,
                 column_index=1,
             ),
@@ -327,14 +332,16 @@ class TestApplySchemaTransform:
             PhysicalColumn(
                 source_name="col_a",
                 target_name="new_a",
-                data_type="Int64",
+                source_type="Int64",
+                target_type="Int64",
                 is_nullable=False,
                 column_index=0,
             ),
             PhysicalColumn(
                 source_name="col_b",  # This column doesn't exist
                 target_name="new_b",
-                data_type="Int64",
+                source_type="Int64",
+                target_type="Int64",
                 is_nullable=False,
                 column_index=1,
             ),
@@ -359,14 +366,16 @@ class TestCreateMetadataContract:
             PhysicalColumn(
                 source_name="user_id",
                 target_name="user_id",
-                data_type="Int64",
+                source_type="Int64",
+                target_type="Int64",
                 is_nullable=False,
                 column_index=0,
             ),
             PhysicalColumn(
                 source_name="amount",
                 target_name="amount",
-                data_type="Float64",
+                source_type="Float64",
+                target_type="Float64",
                 is_nullable=True,
                 column_index=1,
             ),
@@ -397,50 +406,14 @@ class TestCreateMetadataContract:
         assert len(contract.physical_schema) == 2
         assert contract.statistical_profile["row_count"] == 1000
 
-    def test_create_metadata_contract_with_llm_usage(self):
-        """Test creating contract with LLM usage tracking."""
-        physical_schema = [
-            PhysicalColumn(
-                source_name="id",
-                target_name="id",
-                data_type="Int64",
-                is_nullable=False,
-                column_index=0,
-            ),
-        ]
-
-        statistical_profile = {"row_count": 1, "columns": {"id": {"null_count_pct": 0.0}}}
-
-        llm_usage = LLMUsage(
-            tokens_prompt=450,
-            tokens_completion=380,
-            total_tokens=830,
-            estimated_cost=0.012,
-            model_name="kimi-k2-thinking",
-        )
-
-        contract = create_metadata_contract(
-            table_name="test",
-            version="1.0.0",
-            source_path="/in.csv",
-            target_path="/out.parquet",
-            physical_schema=physical_schema,
-            statistical_profile=statistical_profile,
-            created_by="test@example.com",
-            llm_usage=llm_usage,
-        )
-
-        assert contract.llm_usage is not None
-        assert contract.llm_usage.total_tokens == 830
-        assert contract.llm_usage.estimated_cost == 0.012
-
     def test_create_metadata_contract_with_column_roles(self):
         """Test creating contract with custom column roles."""
         physical_schema = [
             PhysicalColumn(
                 source_name="user_id",
                 target_name="user_id",
-                data_type="Int64",
+                source_type="Int64",
+                target_type="Int64",
                 is_nullable=False,
                 column_index=0,
             ),
@@ -477,7 +450,8 @@ class TestCreateMetadataContract:
             PhysicalColumn(
                 source_name="id",
                 target_name="id",
-                data_type="Int64",
+                source_type="Int64",
+                target_type="Int64",
                 is_nullable=False,
                 column_index=0,
             ),
@@ -524,7 +498,8 @@ class TestValidateContract:
                 PhysicalColumn(
                     source_name="col_a",
                     target_name="col_a",
-                    data_type="Int64",
+                    source_type="Int64",
+                    target_type="Int64",
                     is_nullable=False,
                     column_index=0,
                 ),
@@ -558,14 +533,16 @@ class TestValidateContract:
                 PhysicalColumn(
                     source_name="col_a",
                     target_name="same_name",
-                    data_type="Int64",
+                    source_type="Int64",
+                    target_type="Int64",
                     is_nullable=False,
                     column_index=0,
                 ),
                 PhysicalColumn(
                     source_name="col_b",
                     target_name="same_name",
-                    data_type="Int64",
+                    source_type="Int64",
+                    target_type="Int64",
                     is_nullable=False,
                     column_index=1,
                 ),
@@ -586,7 +563,8 @@ class TestValidateContract:
                 PhysicalColumn(
                     source_name="col",
                     target_name="col",
-                    data_type="Int64",
+                    source_type="Int64",
+                    target_type="Int64",
                     is_nullable=False,
                     column_index=0,
                 ),
@@ -607,14 +585,16 @@ class TestValidateContract:
                 PhysicalColumn(
                     source_name="col_0",
                     target_name="col_0",
-                    data_type="Int64",
+                    source_type="Int64",
+                    target_type="Int64",
                     is_nullable=False,
                     column_index=0,
                 ),
                 PhysicalColumn(
                     source_name="col_1",
                     target_name="col_1",
-                    data_type="Int64",
+                    source_type="Int64",
+                    target_type="Int64",
                     is_nullable=False,
                     column_index=5,  # Gap!
                 ),
@@ -711,7 +691,7 @@ class TestIntegration:
         revenue_col = next(col for col in physical_schema if col.source_name == "RevenueUSD")
         assert revenue_col.ai_suggested_type == "Decimal(10,2)"  # AI suggested
         assert revenue_col.user_override_type == "Decimal(12,4)"  # User override
-        assert revenue_col.data_type == "Decimal(12,4)"  # User wins
+        assert revenue_col.target_type == "Decimal(12,4)"  # User wins
 
         # Apply schema to transform DataFrame
         transformed_df, transform_log = apply_schema_transform(df, physical_schema)

@@ -5,8 +5,16 @@ from data_canary.llm.prompts import NAMING_INSTRUCTION
 
 
 def get_naming_check_prompt(columns: List[str]) -> str:
-    """
-    Constructs the user prompt for the Naming check.
+    """Constructs the user prompt for the Naming check.
+
+    Takes a list of column names and constructs a formatted prompt for the LLM
+    to analyze naming convention violations.
+
+    Args:
+        columns: List of column names to analyze.
+
+    Returns:
+        Formatted prompt string for the LLM naming check.
     """
     column_list_str = "\n- ".join(columns)
 
@@ -23,8 +31,16 @@ def get_naming_check_prompt(columns: List[str]) -> str:
 
 
 def run_llm_naming_check(columns: List[str]) -> Optional[NamingCheckReport]:
-    """
-    Executes the LLM naming check using the generalized base function.
+    """Executes the LLM naming check using the generalized base function.
+
+    Takes column names, constructs a prompt, and calls the LLM to analyze
+    naming convention violations.
+
+    Args:
+        columns: List of column names from the dataset.
+
+    Returns:
+        NamingCheckReport with violation details, or None if the check fails.
     """
     prompt = get_naming_check_prompt(columns)
 

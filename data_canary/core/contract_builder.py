@@ -6,7 +6,7 @@ outputs (Parquet files and metadata.json contracts).
 """
 
 from typing import List, Dict, Any, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 import polars as pl
 
 from data_canary.schemas.data_models import (
@@ -14,7 +14,6 @@ from data_canary.schemas.data_models import (
     MetadataContract,
     NamingCheckReport,
     TypeCheckReport,
-    LLMUsage,
     ColumnRole,
 )
 
@@ -99,7 +98,8 @@ def build_physical_schema(
         physical_column = PhysicalColumn(
             source_name=col_name,  # Original name from source file
             target_name=target_name,  # Final name after overrides (default to source)
-            data_type=target_type,  # Final data type after overrides
+            source_type=col_data.get("dtype", "String"),  # Original type from source
+            target_type=target_type,  # Final type after overrides
             is_nullable=col_data.get("null_count_pct", 100) > 0,  # Nullable if any nulls
             role=role,
             ai_suggested_name=ai_suggested_name,
@@ -222,9 +222,8 @@ def apply_schema_transform(
     for physical_col in physical_schema:
         col_name = physical_col.source_name
         target_name = physical_col.target_name
-        target_type = physical_col.data_type
+        target_type = physical_col.target_type
 
-        # Build transformation record
         transform_record: Dict[str, Any] = {
             "column": col_name,
             "target_name": target_name,
@@ -274,7 +273,6 @@ def create_metadata_contract(
     physical_schema: List[PhysicalColumn],
     statistical_profile: Dict[str, Any],
     created_by: str,
-    llm_usage: Optional[LLMUsage] = None,
     column_roles: Optional[List[ColumnRole]] = None,
     additional_metadata: Optional[Dict[str, Any]] = None,
 ) -> MetadataContract:
@@ -292,7 +290,6 @@ def create_metadata_contract(
         physical_schema: List of PhysicalColumn definitions
         statistical_profile: Statistical baseline from profiling
         created_by: Email or identifier of person who approved the contract
-        llm_usage: Optional LLM usage tracking
         column_roles: Optional custom column roles
         additional_metadata: Optional extra metadata to include
 
@@ -308,7 +305,6 @@ def create_metadata_contract(
             physical_schema=physical_columns,
             statistical_profile=profile,
             created_by="data-engineer@company.com",
-            llm_usage=llm_usage,
             column_roles=custom_roles
         )
     """
@@ -316,7 +312,7 @@ def create_metadata_contract(
     identity = {
         "table_name": table_name,
         "version": version,
-        "created_at": datetime.utcnow().isoformat(),  # ISO 8601 format
+        "created_at": datetime.now(timezone.utc).isoformat(),  # ISO 8601 format
         "source_path": source_path,
         "target_path": target_path,
         "created_by": created_by,
@@ -330,8 +326,36 @@ def create_metadata_contract(
         identity=identity,
         physical_schema=physical_schema,
         statistical_profile=statistical_profile,
-        llm_usage=llm_usage,
         column_roles=column_roles,
+    )
+
+
+def build_physical_schema_with_overrides(
+    columns: List[Dict[str, Any]],
+    naming_report: Optional[NamingCheckReport],
+    type_report: Optional[TypeCheckReport],
+    user_overrides: Optional[Dict[str, Dict[str, str]]] = None,
+) -> List[PhysicalColumn]:
+    """Builds physical schema with override precedence: User > AI > Original.
+
+    This is a convenience wrapper around build_physical_schema() that makes the
+    override precedence logic explicit and ensures consistent schema building
+    throughout the application.
+
+    Args:
+        columns: List of column statistics from basic profiling
+        naming_report: AI naming suggestions (optional)
+        type_report: AI type optimization suggestions (optional)
+        user_overrides: User-provided overrides (optional)
+
+    Returns:
+        List of PhysicalColumn objects with final names/types determined by override precedence
+    """
+    return build_physical_schema(
+        columns=columns,
+        naming_report=naming_report,
+        type_report=type_report,
+        user_overrides=user_overrides,
     )
 
 
@@ -370,10 +394,11 @@ def validate_contract(contract: MetadataContract) -> Tuple[bool, List[str]]:
             issues.append(f"Column {idx} missing source_name")
         if not col.target_name:
             issues.append(f"Column {idx} missing target_name")
-        if not col.data_type:
-            issues.append(f"Column {idx} missing data_type")
+        if not col.source_type:
+            issues.append(f"Column {idx} missing source_type")
+        if not col.target_type:
+            issues.append(f"Column {idx} missing target_type")
 
-        # Track target names for duplicate check
         if col.target_name:
             target_names.append(col.target_name)
 
