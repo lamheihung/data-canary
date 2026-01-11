@@ -136,9 +136,9 @@ When adding new features:
 - Test Polars operations with sample DataFrames
 - Run full test suite with: `pytest tests/ -v`
 
-## Current Status: MVP0 Complete
+## Current Status: MVP0 - Almost Complete (1 Blocker)
 
-The implementation now provides a complete MVP0 data governance solution:
+The implementation provides most MVP0 features but has one critical blocker:
 - ✅ File ingestion (CSV/Parquet) with Polars Eager API
 - ✅ Comprehensive Polars profiling with statistical analysis
 - ✅ LLM-powered naming convention review with violation detection
@@ -153,8 +153,10 @@ The implementation now provides a complete MVP0 data governance solution:
 - ✅ Google-style docstrings throughout codebase
 - ✅ Clean code organization with minimal comments (self-documenting)
 
+**Critical Blocker for MVP0 Completion:**
+- ⚠️ Polars Lazy API migration needed in `basic_profiler.py` for large file support (>1GB)
+
 **Remaining for Production Readiness:**
-- Polars Lazy API migration for large file handling (memory efficiency)
 - Additional edge case handling and error messages
 - Performance optimization for large datasets
 - Enhanced logging and monitoring

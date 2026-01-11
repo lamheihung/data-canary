@@ -19,7 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.0.4] - 2026-01-11
 
 ### Added
-- **MVP0 Complete: Human-in-the-Loop UI with LLM Integration**
+- **MVP0 Features Implemented: Human-in-the-Loop UI with LLM Integration**
+  - ⚠️ **Note:** MVP0 not yet complete - Polars Lazy API migration remains as critical blocker
   - **Streamlit 4-Tab Interface**:
     - Tab 1: Raw Data Sample (first 5 rows)
     - Tab 2: Basic Profile & Issues (statistics, quality issues)
