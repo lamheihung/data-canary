@@ -6,6 +6,9 @@ This document captures important architectural decisions made during the Data Ca
 - [ADR-001: Polars as Primary Data Frame Library](#adr-001-polars-as-primary-data-frame-library)
 - [ADR-002: OpenAI API Pattern for LLM Integration](#adr-002-openai-api-pattern-for-llm-integration)
 - [ADR-003: Streamlit for UI Framework](#adr-003-streamlit-for-ui-framework)
+- [ADR-004: Removal of LLMUsage Tracking](#adr-004-removal-of-llmusage-tracking)
+- [ADR-005: Google Style Docstrings](#adr-005-google-style-docstrings)
+- [ADR-006: Minimal Comment Policy](#adr-006-minimal-comment-policy)
 
 ---
 
@@ -371,6 +374,244 @@ data_canary/core/
 - [Streamlit GitHub](https://github.com/streamlit/streamlit)
 - [Streamlit Components](https://docs.streamlit.io/streamlit-community-cloud)
 - [Dash by Plotly](https://dash.plotly.com/) (alternative)
+
+---
+
+## ADR-004: Removal of LLMUsage Tracking
+
+**Status:** ✅ Accepted (and implemented)
+**Date:** 2026-01-11
+**Last Updated:** 2026-01-11
+
+### Context
+
+During MVP0 development, we created an `LLMUsage` class to track:
+- Tokens used (prompt, completion, total)
+- Estimated costs
+- Model names
+
+The intention was to provide cost transparency to users.
+
+However, after implementing the full workflow, we discovered:
+- LLMUsage was never actually instantiated in the production code path
+- The feature was designed but never integrated into the UI display
+- It added complexity and maintenance overhead without providing value
+- It violated YAGNI principle (You Aren't Gonna Need It)
+
+### Decision
+
+Remove the `LLMUsage` class and all references from the codebase:
+- Delete `LLMUsage` class from `data_models.py`
+- Remove `llm_usage` field from `MetadataContract`
+- Remove related imports and parameters from `contract_builder.py`
+- Delete all tests referencing LLMUsage (4 test methods)
+
+**Rationale:**
+- Dead code adds cognitive load without value
+- Can be reintroduced later if truly needed
+- MVP0 should focus on core functionality
+- Simpler codebase is easier to maintain
+
+### Consequences
+
+**Positive:**
+- ✅ Simpler codebase (removed ~50 lines of dead code)
+- ✅ Faster tests (4 fewer test cases)
+- ✅ Less maintenance overhead
+- ✅ More honest codebase (no unused features)
+
+**Negative:**
+- ⚠️ No cost tracking (but this wasn't being used anyway)
+
+**Mitigations:**
+- Can reintroduce in MVP1 if cost tracking becomes a real requirement
+- Should only add with actual user need and UI display
+
+### Related Files
+
+- `data_canary/schemas/data_models.py` - Removed LLMUsage class
+- `data_canary/core/contract_builder.py` - Removed llm_usage parameter
+- `tests/test_data_models.py` - Removed 3 test methods
+- `tests/test_contract_builder.py` - Removed 1 test method
+
+### Related ADRs
+
+- ADR-005: Google Style Docstrings (documentation clarity)
+- ADR-006: Minimal Comment Policy (code simplicity)
+
+---
+
+## ADR-005: Google Style Docstrings
+
+**Status:** ✅ Accepted (and implemented)
+**Date:** 2026-01-11
+**Last Updated:** 2026-01-11
+
+### Context
+
+As the codebase grew to 59+ functions and classes with complex data contract logic, documentation became critical for:
+- Developer onboarding
+- Code review efficiency
+- API usage clarity
+- Future maintenance
+
+Initially, documentation was inconsistent:
+- Some functions had one-line docstrings
+- Others had Args/Returns sections
+- No standard format across the codebase
+
+### Decision
+
+Adopt **Google Style Docstrings** for all public functions and classes:
+
+**Format:**
+```python
+def function_name(param1, param2):
+    """Brief one-line description.
+
+    Longer description of what the function does and why.
+
+    Args:
+        param1: Description of first parameter.
+        param2: Description of second parameter.
+
+    Returns:
+        Description of return value including type information.
+
+    Raises:
+        ExceptionType: When and why this exception is raised.
+    """
+```
+
+**Implementation:**
+- Updated all 59 functions/classes with Google-style docstrings
+- Added Args, Returns, Raises sections where applicable
+- Pydantic models include Attributes sections
+- Consistent formatting throughout codebase
+
+### Consequences
+
+**Positive:**
+- ✅ Consistent documentation format (easy to read/scan)
+- ✅ Clear parameter descriptions (reduces bugs)
+- ✅ Return value documentation (improves API usage)
+- ✅ Better IDE support (auto-completion, hints)
+- ✅ Professional codebase appearance
+
+**Negative:**
+- ⚠️ Initial time investment (completed in ~1 hour)
+- ⚠️ Ongoing maintenance (must update docstrings with code changes)
+
+**Mitigations:**
+- Make docstring updates part of code review checklist
+- Use tools like `mypy` and `ruff` to catch inconsistencies
+- Enforce via CI if needed
+
+### Related Files
+
+- All `.py` files in `data_canary/` (13 files)
+- Total: 59 functions and classes updated
+- Specifically: `app.py`, `contract_builder.py`, `data_models.py` (most complex)
+
+### Related ADRs
+
+- ADR-006: Minimal Comment Policy (avoid docstring duplication with comments)
+
+### References
+
+- [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html#s3.8-comments-and-docstrings)
+- [Sphinx Napoleon Extension](https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html)
+
+---
+
+## ADR-006: Minimal Comment Policy
+
+**Status:** ✅ Accepted (and implemented)
+**Date:** 2026-01-11
+**Last Updated:** 2026-01-11
+
+### Context
+
+The codebase initially had many comments:
+- Section headers (`# --- Section Name ---`)
+- Inline comments explaining obvious code
+- Comments that duplicated what code expressed
+- TODOs and notes scattered throughout
+
+This created clutter and made the code harder to read.
+
+Examples of problematic comments:
+```python
+# Build lookup maps for AI suggestions  # <- Obvious from function name
+if naming_report and naming_report.violations:
+    for violation in naming_report.violations:
+        naming_suggestions[violation.column_name] = violation.suggested_name
+
+# Check if column exists  # <- Code is self-documenting
+if col_name not in df_transformed.columns:
+    transform_record["actions"].append(f"SKIP: Column '{col_name}' not found")
+    continue
+```
+
+### Decision
+
+Adopt a **Minimal Comment Policy**:
+
+**Remove comments that:**
+- State the obvious (what the code does)
+- Duplicate information in variable/function names
+- Are section headers (code structure should be clear)
+- Are outdated or no longer relevant
+
+**Keep comments that:**
+- Explain **why** (not what) - business logic, algorithms
+- Provide context not obvious from code (external dependencies, quirks)
+- Warn about consequences or side effects
+- Reference external resources or specifications
+
+**Examples of good comments:**
+```python
+# Preserve original order (non-obvious why)
+column_index=idx
+
+# User override takes precedence over AI (business rule)
+target_name = user_override_name or ai_suggested_name or col_name
+```
+
+### Consequences
+
+**Positive:**
+- ✅ Cleaner, more readable code
+- ✅ Code becomes self-documenting (better naming)
+- ✅ Less maintenance (no outdated comments)
+- ✅ Forces better function/variable naming
+- ✅ Professional appearance
+
+**Negative:**
+- ⚠️ Initial cleanup effort (completed in ~30 minutes)
+- ⚠️ Some developers prefer more comments (can override for complex logic)
+
+**Mitigations:**
+- Use docstrings for API documentation (see ADR-005)
+- Write clear, descriptive code
+- Use type hints for clarity
+- Add tests that serve as documentation
+
+### Related Files
+
+- All `.py` files cleaned (removed ~50 unnecessary comments)
+- Key files: `contract_builder.py`, `base.py`, `prompts.py`
+- Data model classes already had good docstrings
+
+### Related ADRs
+
+- ADR-004: Removal of LLMUsage (removing dead code, similar principle)
+- ADR-005: Google Style Docstrings (documentation moves to docstrings)
+
+### References
+
+- [Clean Code by Robert Martin](https://blog.cleancoder.com/2011-11-11-Did-You-Read-It.html)
+- [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html#s3.8-comments-and-docstrings)
 
 ---
 

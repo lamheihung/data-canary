@@ -6,8 +6,17 @@ import json
 
 
 def get_type_check_prompt(schema: Dict[str, str], columns: List[Dict[str, Any]]) -> str:
-    """
-    Constructs the user prompt for the Schema/Type check.
+    """Constructs the user prompt for the Schema/Type check.
+
+    Takes schema and column statistics and constructs a formatted prompt for the LLM
+    to analyze type optimization suggestions.
+
+    Args:
+        schema: Dictionary mapping column names to their current data types.
+        columns: List of column statistics including null counts, min/max values, etc.
+
+    Returns:
+        Formatted prompt string for the LLM type check.
     """
     schema_str = json.dumps(schema, indent=4)
     columns_str = json.dumps(columns, indent=4)
@@ -27,8 +36,17 @@ def get_type_check_prompt(schema: Dict[str, str], columns: List[Dict[str, Any]])
 def run_llm_type_check(
     schema: Dict[str, str], columns: List[Dict[str, Any]]
 ) -> Optional[TypeCheckReport]:
-    """
-    Executes the LLM type check using the generalized base function.
+    """Executes the LLM type check using the generalized base function.
+
+    Takes schema and column statistics, constructs a prompt, and calls the LLM
+    to analyze type optimization suggestions.
+
+    Args:
+        schema: Dictionary mapping column names to their current data types.
+        columns: List of column statistics including null counts, min/max values, etc.
+
+    Returns:
+        TypeCheckReport with optimization suggestions, or None if the check fails.
     """
     prompt = get_type_check_prompt(schema, columns)
 

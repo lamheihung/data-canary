@@ -112,7 +112,8 @@ class TestSaveMetadataContract:
                 PhysicalColumn(
                     source_name="col",
                     target_name="col",
-                    data_type="Int64",
+                    source_type="Int64",
+                    target_type="Int64",
                     is_nullable=False,
                     column_index=0,
                 ),
@@ -273,7 +274,8 @@ class TestLoadMetadataContract:
                 PhysicalColumn(
                     source_name="col",
                     target_name="col",
-                    data_type="Int64",
+                    source_type="Int64",
+                    target_type="Int64",
                     is_nullable=False,
                     column_index=0,
                 ),

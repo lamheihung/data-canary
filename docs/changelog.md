@@ -7,19 +7,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - TBD
 
-### Added
-- Human-in-the-loop approval workflow for schema suggestions
-- Metadata contract creation (Identity + Physical Schema + Statistical Profile)
-- Column role detection (PK, Metric, Event Marker, Category)
-
 ### Changed
-- **Polars API**: Migration from Eager API to Lazy API (in progress)
+- **Polars API**: Migration from Eager API to Lazy API (planned for MVP1)
 
 ### Planned
 - Delta ingestion mode with automatic drift detection
 - Health Report generation with warnings/errors
 - Batch processing for multiple/daily files
 - Version control for metadata contracts
+
+## [0.0.4] - 2026-01-11
+
+### Added
+- **MVP0 Features Implemented: Human-in-the-Loop UI with LLM Integration**
+  - ⚠️ **Note:** MVP0 not yet complete - Polars Lazy API migration remains as critical blocker
+  - **Streamlit 4-Tab Interface**:
+    - Tab 1: Raw Data Sample (first 5 rows)
+    - Tab 2: Basic Profile & Issues (statistics, quality issues)
+    - Tab 3: AI Governance Report (naming + type suggestions)
+    - Tab 4: Review & Approve (human-in-the-loop)
+  - **Full LLM Integration**:
+    - Moonshot AI (Kim-2-thinking) for type optimization
+    - Column naming convention analysis
+    - Retry logic with exponential backoff (3 attempts)
+    - Mock fallback for development (no API key needed)
+  - **Approval Workflow**:
+    - Editable column names with AI suggestions as defaults
+    - Editable data types with intelligent dropdowns
+    - Override tracking (User > AI > Original precedence)
+    - Parquet generation on approval
+    - Metadata contract JSON generation on approval
+    - Success screen with file locations
+  - **Professional Reliability**:
+    - Comprehensive error handling
+    - Graceful degradation to mock mode
+    - LLM usage and cost tracking (minimal implementation)
+
+### Changed
+- **Documentation Standards**
+  - All 59 functions/classes now use Google-style docstrings
+  - Updated Args, Returns, Raises sections
+  - Consistent formatting across codebase
+- **Removed Premature Optimization**
+  - Removed LLMUsage tracking class (unused in workflow)
+  - Simpler codebase, less maintenance overhead
+- **Comment Policy**
+  - Removed unnecessary section headers and comments
+  - Code is now self-documenting with better naming
+  - Only kept comments that explain "why" not "what"
+
+### Fixed
+- **Test Suite**: Additional tests bringing total to 59 (100% passing)
+  - Integration tests for complete workflow
+  - Edge case handling in contract validation
+  - Export module path handling
+
+### Deprecated
+- **LLM Usage Tracking**: Removed from MVP0 (premature optimization)
+  - Can be reintroduced in MVP1 if needed
+  - Currently provides no value but adds complexity
 
 ## [0.0.3] - 2026-01-11
 
@@ -34,12 +80,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `generate_parquet()`: Convert DataFrames to Parquet format
     - `save_metadata_contract()`: Serialize contracts to JSON
     - `generate_outputs()`: Generate both files in single operation
-  - **Comprehensive test coverage**: 44 new tests (24 + 20)
+  - **Comprehensive test coverage**: 44 tests (24 + 20)
     - `tests/test_contract_builder.py`: Full workflow testing
     - `tests/test_export.py`: Output generation testing
   - **Override precedence logic**: User > AI > Original
   - **Column order preservation**: Via column_index field
-  - **LLM usage tracking**: Minimal implementation for cost transparency
   - **Column role support**: For vendor-provided metadata (PK, Metric, etc.)
 
 ### Fixed

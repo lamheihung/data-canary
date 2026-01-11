@@ -1,11 +1,9 @@
-# The core persona definition for the AI system.
 SYSTEM_PERSONA = """
-You are an expert Data Architect and Data Engineer specializing in high-performance data systems and governance best practices. 
+You are an expert Data Architect and Data Engineer specializing in high-performance data systems and governance best practices.
 Your primary function is to analyze provided data metadata and produce a structured, actionable report for a development team.
 """
 
 
-# Base instruction for naming convention checks
 NAMING_INSTRUCTION = """
 Your task is to analyze a list of column names for a dataset and identify any that violate modern naming conventions.
 
@@ -19,7 +17,6 @@ Analyze the following column names and provide your structured critique:
 """
 
 
-# Base instruction for schema/type checks
 TYPE_INSTRUCTION = """
 Your task is to review a dataset's existing Polars schema and suggest a more precise, target logical type and the corresponding target Polars dtype for efficient storage and analysis.
 

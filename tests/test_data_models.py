@@ -1,65 +1,15 @@
 """Unit tests for Pydantic data models.
 
-Tests cover the contract models for MVP0 including LLM usage tracking,
-column roles, physical schema definitions, and metadata contracts.
+Tests cover the contract models for MVP0 including column roles,
+physical schema definitions, and metadata contracts.
 """
 
 import pytest
 from data_canary.schemas.data_models import (
-    LLMUsage,
     ColumnRole,
     PhysicalColumn,
     MetadataContract,
 )
-
-
-class TestLLMUsage:
-    """Test LLMUsage model for tracking API usage and costs."""
-
-    def test_llm_usage_creation(self):
-        """Test creating a valid LLMUsage instance."""
-        usage = LLMUsage(
-            tokens_prompt=150,
-            tokens_completion=250,
-            total_tokens=400,
-            estimated_cost=0.006,
-            model_name="kimi-k2-thinking",
-        )
-
-        assert usage.tokens_prompt == 150
-        assert usage.tokens_completion == 250
-        assert usage.total_tokens == 400
-        assert usage.estimated_cost == 0.006
-        assert usage.model_name == "kimi-k2-thinking"
-
-    def test_llm_usage_default_values(self):
-        """Test LLMUsage with default values."""
-        usage = LLMUsage(model_name="test-model")
-
-        assert usage.tokens_prompt == 0
-        assert usage.tokens_completion == 0
-        assert usage.total_tokens == 0
-        assert usage.estimated_cost == 0.0
-        assert usage.model_name == "test-model"
-
-    def test_llm_usage_serialization(self):
-        """Test LLMUsage JSON serialization."""
-        usage = LLMUsage(
-            tokens_prompt=100,
-            tokens_completion=200,
-            total_tokens=300,
-            estimated_cost=0.0045,
-            model_name="gpt-4",
-        )
-
-        json_str = usage.model_dump_json()
-        assert "gpt-4" in json_str
-        assert "300" in json_str
-
-        # Test deserialization
-        usage2 = LLMUsage.model_validate_json(json_str)
-        assert usage2.total_tokens == 300
-        assert usage2.estimated_cost == 0.0045
 
 
 class TestColumnRole:
@@ -120,7 +70,8 @@ class TestPhysicalColumn:
         col = PhysicalColumn(
             source_name="User ID",
             target_name="user_id",
-            data_type="UInt32",
+            source_type="UInt32",
+            target_type="UInt32",
             is_nullable=False,
             ai_suggested_name="user_id",
             ai_suggested_type="UInt32",
@@ -129,7 +80,7 @@ class TestPhysicalColumn:
 
         assert col.source_name == "User ID"
         assert col.target_name == "user_id"
-        assert col.data_type == "UInt32"
+        assert col.target_type == "UInt32"
         assert col.is_nullable is False
         assert col.user_override_name is None
         assert col.user_override_type is None
@@ -140,7 +91,8 @@ class TestPhysicalColumn:
         col = PhysicalColumn(
             source_name="CustomerID",
             target_name="customer_id_override",
-            data_type="UInt64",
+            source_type="UInt64",
+            target_type="UInt64",
             is_nullable=False,
             ai_suggested_name="customer_id",
             user_override_name="customer_id_override",
@@ -155,7 +107,8 @@ class TestPhysicalColumn:
         col = PhysicalColumn(
             source_name="Revenue",
             target_name="revenue",
-            data_type="Decimal(10,2)",  # User override
+            source_type="Decimal(10,2)",  # User override
+            target_type="Decimal(10,2)",
             is_nullable=True,
             ai_suggested_type="Float64",  # AI suggested different type
             user_override_type="Decimal(10,2)",
@@ -164,14 +117,15 @@ class TestPhysicalColumn:
 
         assert col.user_override_type == "Decimal(10,2)"
         assert col.ai_suggested_type == "Float64"
-        assert col.data_type == "Decimal(10,2)"  # Final type is override
+        assert col.target_type == "Decimal(10,2)"  # Final type is override
 
     def test_physical_column_with_role(self):
         """Test PhysicalColumn with column role assigned."""
         col = PhysicalColumn(
             source_name="user_id",
             target_name="user_id",
-            data_type="UInt32",
+            source_type="UInt32",
+            target_type="UInt32",
             is_nullable=False,
             role="primary_key",
             column_index=0,
@@ -185,7 +139,8 @@ class TestPhysicalColumn:
             PhysicalColumn(
                 source_name=f"col_{i}",
                 target_name=f"col_{i}",
-                data_type="Int64",
+                source_type="Int64",
+                target_type="Int64",
                 is_nullable=True,
                 column_index=i,
             )
@@ -202,7 +157,8 @@ class TestPhysicalColumn:
         col_without_override = PhysicalColumn(
             source_name="name",
             target_name="name",
-            data_type="String",
+            source_type="String",
+            target_type="String",
             is_nullable=True,
             column_index=0,
         )
@@ -210,7 +166,8 @@ class TestPhysicalColumn:
         col_with_override = PhysicalColumn(
             source_name="name",
             target_name="customer_name",
-            data_type="String",
+            source_type="String",
+            target_type="String",
             is_nullable=True,
             user_override_name="customer_name",
             column_index=1,
@@ -239,7 +196,8 @@ class TestMetadataContract:
                 PhysicalColumn(
                     source_name="User ID",
                     target_name="user_id",
-                    data_type="UInt32",
+                    source_type="UInt32",
+                    target_type="UInt32",
                     is_nullable=False,
                     role="primary_key",
                     column_index=0,
@@ -247,7 +205,8 @@ class TestMetadataContract:
                 PhysicalColumn(
                     source_name="Sale Date",
                     target_name="sale_date",
-                    data_type="Date",
+                    source_type="Date",
+                    target_type="Date",
                     is_nullable=False,
                     role="event_marker",
                     column_index=1,
@@ -268,27 +227,6 @@ class TestMetadataContract:
         assert sample_contract.identity["version"] == "1.0.0"
         assert len(sample_contract.physical_schema) == 2
         assert sample_contract.statistical_profile["row_count"] == 10000
-
-    def test_metadata_contract_with_llm_usage(self, sample_contract):
-        """Test MetadataContract with LLM usage tracking."""
-        llm_usage = LLMUsage(
-            tokens_prompt=450,
-            tokens_completion=380,
-            total_tokens=830,
-            estimated_cost=0.012,
-            model_name="kimi-k2-thinking",
-        )
-
-        contract_with_usage = MetadataContract(
-            identity=sample_contract.identity,
-            physical_schema=sample_contract.physical_schema,
-            statistical_profile=sample_contract.statistical_profile,
-            llm_usage=llm_usage,
-        )
-
-        assert contract_with_usage.llm_usage is not None
-        assert contract_with_usage.llm_usage.total_tokens == 830
-        assert contract_with_usage.llm_usage.estimated_cost == 0.012
 
     def test_metadata_contract_with_column_roles(self, sample_contract):
         """Test MetadataContract with custom column roles."""
@@ -319,14 +257,16 @@ class TestMetadataContract:
             PhysicalColumn(
                 source_name="User ID",
                 target_name="user_id",
-                data_type="UInt32",
+                source_type="UInt32",
+                target_type="UInt32",
                 is_nullable=False,
                 column_index=0,
             ),
             PhysicalColumn(
                 source_name="RevenueUSD",
                 target_name="revenue_override",
-                data_type="Decimal(10,2)",
+                source_type="Decimal(10,2)",
+                target_type="Decimal(10,2)",
                 is_nullable=False,
                 user_override_name="revenue_override",
                 column_index=1,
@@ -362,7 +302,8 @@ class TestMetadataContract:
             PhysicalColumn(
                 source_name=f"col_{i}",
                 target_name=f"col_{i}",
-                data_type="Int64",
+                source_type="Int64",
+                target_type="Int64",
                 is_nullable=True,
                 column_index=i,
             )
@@ -385,15 +326,6 @@ class TestIntegration:
 
     def test_full_contract_with_all_features(self):
         """Test a complete contract using all features together."""
-        # Create LLM usage tracking
-        llm_usage = LLMUsage(
-            tokens_prompt=1500,
-            tokens_completion=1200,
-            total_tokens=2700,
-            estimated_cost=0.040,
-            model_name="kimi-k2-thinking",
-        )
-
         # Create column roles
         roles = [
             ColumnRole(
@@ -407,7 +339,8 @@ class TestIntegration:
             PhysicalColumn(
                 source_name="User ID",
                 target_name="user_id",
-                data_type="UInt32",
+                source_type="UInt32",
+                target_type="UInt32",
                 is_nullable=False,
                 role="primary_key",
                 ai_suggested_name="user_id",
@@ -416,7 +349,8 @@ class TestIntegration:
             PhysicalColumn(
                 source_name="EventTS",
                 target_name="event_timestamp",
-                data_type="Datetime",
+                source_type="Datetime",
+                target_type="Datetime",
                 is_nullable=False,
                 role="event_marker",
                 ai_suggested_name="event_timestamp",
@@ -425,7 +359,8 @@ class TestIntegration:
             PhysicalColumn(
                 source_name="RevenueUSD",
                 target_name="revenue_usd_override",
-                data_type="Decimal(10,2)",
+                source_type="Decimal(10,2)",
+                target_type="Decimal(10,2)",
                 is_nullable=True,
                 role="metric",
                 ai_suggested_name="revenue_usd",
@@ -455,12 +390,10 @@ class TestIntegration:
                     "revenue_usd_override": {"null_count_pct": 0.15},
                 },
             },
-            llm_usage=llm_usage,
             column_roles=roles,
         )
 
         # Verify all components
-        assert contract.llm_usage.total_tokens == 2700
         assert len(contract.column_roles) == 2
         assert len(contract.physical_schema) == 3
 
@@ -478,7 +411,6 @@ class TestIntegration:
         assert "user_events_2025" in json_str
         assert "revenue_usd_override" in json_str
         assert "Decimal(10,2)" in json_str
-        assert "2700" in json_str  # Token count
 
 
 if __name__ == "__main__":
